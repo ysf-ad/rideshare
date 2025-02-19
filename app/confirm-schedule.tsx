@@ -5,11 +5,11 @@ import { useLocalSearchParams, router } from 'expo-router';
 
 export default function ConfirmScheduleScreen() {
   const params = useLocalSearchParams<{ scheduleData: string }>();
-  const schedule = params.scheduleData ? JSON.parse(params.scheduleData) : {};
+  const { flexibility, ...scheduleData } = params.scheduleData ? JSON.parse(params.scheduleData) : {};
 
   const handleConfirm = () => {
     // Navigate to explore page after confirmation
-    router.replace('/(tabs)/explore');
+    router.replace('/explore');
   };
 
   const formatDay = (day: string) => {
@@ -20,6 +20,7 @@ export default function ConfirmScheduleScreen() {
   return (
     <ThemedView style={styles.container}>
       <ThemedText type="title" style={styles.title}>Confirm Your Schedule</ThemedText>
+      <ThemedText style={styles.flexibilityText}>Flexibility: ±{flexibility || 0}m</ThemedText>
       
       <ScrollView 
         style={styles.scrollView}
@@ -27,8 +28,8 @@ export default function ConfirmScheduleScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.scheduleContainer}>
-          {Object.entries(schedule).map(([day, data]: [string, any]) => {
-            if (!data || day === 'All Weekdays') return null;
+          {Object.entries(scheduleData).map(([day, data]: [string, any]) => {
+            if (!data || day === 'All Weekdays' || day === 'flexibility') return null;
             return (
               <View key={day} style={styles.dayContainer}>
                 <ThemedText style={styles.dayTitle}>{formatDay(day)}</ThemedText>
@@ -69,7 +70,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
   },
   title: {
+    marginBottom: 8,
+  },
+  flexibilityText: {
+    fontSize: 16,
+    color: '#6b7280',
     marginBottom: 20,
+    textAlign: 'center',
   },
   scrollView: {
     flex: 1,

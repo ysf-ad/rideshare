@@ -6,6 +6,7 @@ import { ThemedView } from '@/components/ThemedView';
 import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import Slider from '@react-native-community/slider';
 
 type TimeData = {
   [key: string]: { dropoff: string; pickup: string; dropoffPosition: number; pickupPosition: number } | null;
@@ -45,6 +46,7 @@ export default function ScheduleScreen() {
   const scrollOffset = useRef(0);
   const isDragging = useRef(false);
   const activeHandle = useRef<{ isDropoff: boolean; startY: number; startPosition: number } | null>(null);
+  const [flexibility, setFlexibility] = useState(0);
   
   const [timeData, setTimeData] = useState<TimeData>({
     'All Weekdays': { dropoff: '09:00', pickup: '17:00', dropoffPosition: 9 * BASE_HOUR_HEIGHT, pickupPosition: 17 * BASE_HOUR_HEIGHT },
@@ -121,8 +123,10 @@ export default function ScheduleScreen() {
       if (data) {
         const dropoffHour = Math.floor(data.dropoffPosition / BASE_HOUR_HEIGHT);
         const pickupHour = Math.floor(data.pickupPosition / BASE_HOUR_HEIGHT);
-        minTime = Math.min(minTime, dropoffHour, pickupHour);
-        maxTime = Math.max(maxTime, dropoffHour, pickupHour);
+        const flexibilityHours = flexibility / 60;
+        
+        minTime = Math.min(minTime, dropoffHour - flexibilityHours, pickupHour - flexibilityHours);
+        maxTime = Math.max(maxTime, dropoffHour + flexibilityHours, pickupHour + flexibilityHours);
         hasValidTimes = true;
       }
     });
@@ -135,8 +139,8 @@ export default function ScheduleScreen() {
     const range = maxTime - minTime;
     const padding = range < 4 ? 2 : 1;
 
-    minTime = Math.max(0, minTime - padding);
-    maxTime = Math.min(23, maxTime + padding);
+    minTime = Math.max(0, Math.floor(minTime - padding));
+    maxTime = Math.min(23, Math.ceil(maxTime + padding));
 
     setVisibleRange({ start: minTime, end: maxTime });
   };
@@ -339,7 +343,10 @@ export default function ScheduleScreen() {
     );
     router.push({
       pathname: "/confirm-schedule",
-      params: { scheduleData: JSON.stringify(filteredData) }
+      params: { scheduleData: JSON.stringify({
+        ...filteredData,
+        flexibility: flexibility
+      }) }
     });
   };
 
@@ -471,21 +478,23 @@ export default function ScheduleScreen() {
                     {dayData && (
                       <>
                         <View style={[
-                          styles.timeLine, 
-                          { 
-                            top: (dayData.dropoffPosition / BASE_HOUR_HEIGHT) * hourHeight - (smoothVisibleRange.start * hourHeight),
+                          styles.timeLine,
+                          {
+                            top: ((dayData.dropoffPosition / BASE_HOUR_HEIGHT) * hourHeight) - (smoothVisibleRange.start * hourHeight),
+                            height: Math.max(2, (flexibility / 30) * hourHeight),
+                            transform: [{ translateY: -((flexibility / 30) * hourHeight) / 2 }],
                             backgroundColor: '#000000',
                             opacity: 0.15,
-                            height: 2,
                           }
                         ]} />
                         <View style={[
                           styles.timeLine, 
                           { 
-                            top: (dayData.pickupPosition / BASE_HOUR_HEIGHT) * hourHeight - (smoothVisibleRange.start * hourHeight),
+                            top: ((dayData.pickupPosition / BASE_HOUR_HEIGHT) * hourHeight) - (smoothVisibleRange.start * hourHeight),
+                            height: Math.max(2, (flexibility / 30) * hourHeight),
+                            transform: [{ translateY: -((flexibility / 30) * hourHeight) / 2 }],
                             backgroundColor: '#000000',
                             opacity: 0.15,
-                            height: 2,
                           }
                         ]} />
                       </>
@@ -497,15 +506,30 @@ export default function ScheduleScreen() {
           </View>
         </ScrollView>
       </View>
+      <View style={styles.flexibilityContainer}>
+        <View style={styles.flexibilityHeader}>
+          <ThemedText style={styles.flexibilityTitle}>Flexibility</ThemedText>
+          <ThemedText style={styles.flexibilityValue}>
+            {Math.round(flexibility)} {flexibility === 1 ? 'minute' : 'minutes'}
+          </ThemedText>
+        </View>
+        <Slider
+          style={styles.slider}
+          minimumValue={0}
+          maximumValue={60}
+          step={5}
+          value={flexibility}
+          onValueChange={setFlexibility}
+          minimumTrackTintColor="#000000"
+          maximumTrackTintColor="#e5e7eb"
+          thumbTintColor="#000000"
+        />
+        <View style={styles.flexibilityLabels}>
+          <ThemedText style={styles.flexibilityLabel}>0 min</ThemedText>
+          <ThemedText style={styles.flexibilityLabel}>60 min</ThemedText>
+        </View>
+      </View>
       <View style={styles.buttonContainer}>
-        <Pressable 
-          style={styles.uploadButton}
-          onPress={() => {
-            // Handle upload schedule
-          }}
-        >
-          <Text style={styles.uploadButtonText}>Upload Schedule</Text>
-        </Pressable>
         <Pressable 
           style={styles.continueButton}
           onPress={handleContinue}
@@ -692,5 +716,37 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 14,
     fontWeight: '500',
+  },
+  flexibilityContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  flexibilityHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  flexibilityTitle: {
+    fontSize: 14,
+    color: '#374151',
+    fontWeight: '500',
+  },
+  flexibilityValue: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  slider: {
+    width: '100%',
+    height: 40,
+  },
+  flexibilityLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: -8,
+  },
+  flexibilityLabel: {
+    fontSize: 12,
+    color: '#6b7280',
   },
 }); 
