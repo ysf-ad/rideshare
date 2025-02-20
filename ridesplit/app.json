@@ -18,7 +18,12 @@
         "backgroundColor": "#ffffff"
       },
       "userInterfaceStyle": "light",
-      "package": "com.yousifad.rideSplit"
+      "package": "com.yousifad.rideSplit",
+      "config": {
+        "googleMaps": {
+          "apiKey": ""
+        }
+      }
     },
     "web": {
       "bundler": "metro",

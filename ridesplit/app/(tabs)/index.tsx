@@ -1,82 +1,101 @@
-import { StyleSheet, Pressable, Image, TextInput } from 'react-native';
-import { router } from 'expo-router';
-import { ThemedText } from '@/components/ThemedText';
+import { StyleSheet, View, Text, Image, ScrollView, Pressable } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
-import { useState } from 'react';
+import { ThemedText } from '@/components/ThemedText';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 
-export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  const handleLogin = () => {
-    router.push('/onboarding/location');
+export default function HomeScreen() {
+  // Mock data for demonstration
+  const nextRide = {
+    day: 'Monday',
+    time: '8:30 AM',
+    driver: {
+      name: 'Tom Smith',
+      imageUrl: 'https://via.placeholder.com/100',
+    },
+    pickup: '123 Home St',
+    dropoff: '456 School Ave',
   };
 
-  const handleForgotPassword = () => {
-    router.push('/forgot-password');
+  const groupStats = {
+    totalGroups: 7,
+    searchingGroups: 3,
   };
 
-  const handleCreateAccount = () => {
-    router.push('/signup');
+  const handleGroupsPress = () => {
+    router.push('/(tabs)/groups');
   };
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedView style={styles.logoContainer}>
-        <Image
-          source={require('@/assets/images/metaball.png')}
-          style={styles.logoImage}
-          resizeMode="contain"
-        />
-        <ThemedText style={styles.logoText}>Ride Split</ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.content}>
-        <ThemedView style={styles.header}>
-          <ThemedText type="title">Welcome Back</ThemedText>
-          <ThemedText style={styles.subtitle}>Please sign in to continue</ThemedText>
-        </ThemedView>
+      <ScrollView>
+        <View style={styles.greeting}>
+          <ThemedText style={styles.greetingText}>Hello, John.</ThemedText>
+        </View>
 
-        <ThemedView style={styles.form}>
-          <ThemedView style={styles.inputContainer}>
-            <ThemedText style={styles.label}>Email</ThemedText>
-            <TextInput
-              style={styles.input}
-              value={email}
-              onChangeText={setEmail}
-              placeholder="Enter your email"
-              placeholderTextColor="#9ca3af"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoComplete="email"
-              autoCorrect={false}
-            />
-          </ThemedView>
+        <View style={styles.section}>
+          <ThemedText type="title" style={styles.sectionTitle}>Next Ride</ThemedText>
+          <View style={styles.nextRideCard}>
+            <View style={styles.driverInfo}>
+              <Image
+                source={{ uri: nextRide.driver.imageUrl }}
+                style={styles.driverAvatar}
+              />
+              <View>
+                <Text style={styles.driverName}>{nextRide.driver.name}</Text>
+                <Text style={styles.label}>Driver</Text>
+              </View>
+            </View>
+            
+            <View style={styles.rideDetails}>
+              <View style={styles.timeInfo}>
+                <Ionicons name="calendar-outline" size={20} color="#000000" />
+                <Text style={styles.timeText}>{nextRide.day} at {nextRide.time}</Text>
+              </View>
+              
+              <View style={styles.routeInfo}>
+                <View style={styles.routePoint}>
+                  <Ionicons name="location-outline" size={20} color="#000000" />
+                  <Text style={styles.routeText}>{nextRide.pickup}</Text>
+                </View>
+                <View style={styles.routeArrow}>
+                  <Ionicons name="arrow-down" size={16} color="#6b7280" />
+                </View>
+                <View style={styles.routePoint}>
+                  <Ionicons name="location-outline" size={20} color="#000000" />
+                  <Text style={styles.routeText}>{nextRide.dropoff}</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        </View>
 
-          <ThemedView style={styles.inputContainer}>
-            <ThemedText style={styles.label}>Password</ThemedText>
-            <TextInput
-              style={styles.input}
-              value={password}
-              onChangeText={setPassword}
-              placeholder="Enter your password"
-              placeholderTextColor="#9ca3af"
-              secureTextEntry
-              autoCapitalize="none"
-              autoComplete="password"
-            />
-          </ThemedView>
+        <Pressable onPress={handleGroupsPress}>
+          <View style={styles.section}>
+            <ThemedText type="title" style={styles.sectionTitle}>Your Groups</ThemedText>
+            <View style={styles.statsContainer}>
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>{groupStats.totalGroups}</Text>
+                <Text style={styles.statLabel}>Total Groups</Text>
+              </View>
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>{groupStats.searchingGroups}</Text>
+                <Text style={styles.statLabel}>Groups Looking for Riders</Text>
+              </View>
+            </View>
+          </View>
 
-          <Pressable onPress={handleLogin} style={styles.button}>
-            <ThemedText style={styles.buttonText}>Sign In</ThemedText>
-          </Pressable>
-          <Pressable onPress={handleForgotPassword} style={styles.linkContainer}>
-            <ThemedText style={styles.linkText}>Forgot password?</ThemedText>
-          </Pressable>
-          <Pressable onPress={handleCreateAccount} style={styles.linkContainer}>
-            <ThemedText style={styles.linkText}>Or create an account</ThemedText>
-          </Pressable>
-        </ThemedView>
-      </ThemedView>
+          <View style={styles.section}>
+            <ThemedText type="title" style={styles.sectionTitle}>Groups Status</ThemedText>
+            <View style={styles.searchingGroupsCard}>
+              <Ionicons name="search-outline" size={24} color="#6b7280" style={styles.searchIcon} />
+              <Text style={styles.searchingText}>
+                {groupStats.searchingGroups} of your groups are currently looking for additional riders
+              </Text>
+            </View>
+          </View>
+        </Pressable>
+      </ScrollView>
     </ThemedView>
   );
 }
@@ -84,86 +103,132 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
     padding: 20,
-    justifyContent: 'flex-start',
+    backgroundColor: '#ffffff',
   },
-  content: {
-    maxWidth: 400,
-    width: '100%',
-    alignSelf: 'center',
+  greeting: {
+    marginBottom: 24,
+    marginTop: 12,
   },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 40,
-    marginTop: 20,
-    minHeight: 90,
-    paddingVertical: 10,
-  },
-  logoImage: {
-    width: 80,
-    height: 80,
-  },
-  logoText: {
-    fontSize: 32,
+  greetingText: {
+    fontSize: 36,
     fontWeight: 'bold',
     color: '#000000',
-    marginLeft: 10,
-    includeFontPadding: false,
-    textAlignVertical: 'center',
-    lineHeight: 38,
+    letterSpacing: -1,
   },
-  header: {
-    marginBottom: 20,
-    alignItems: 'center',
+  section: {
+    marginBottom: 24,
   },
-  subtitle: {
-    color: '#6b7280',
-    marginTop: 8,
+  sectionTitle: {
     fontSize: 16,
-  },
-  form: {
-    gap: 16,
-  },
-  inputContainer: {
-    gap: 8,
-  },
-  label: {
-    fontSize: 14,
-    color: '#374151',
     fontWeight: '500',
+    color: '#6b7280',
+    marginBottom: 16,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  input: {
-    height: 40,
+  nextRideCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 16,
     borderWidth: 1,
     borderColor: '#e5e7eb',
-    borderRadius: 6,
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 12,
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  driverInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 16,
+  },
+  driverAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#f3f4f6',
+  },
+  driverName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000000',
+  },
+  label: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  rideDetails: {
+    gap: 16,
+  },
+  timeInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  timeText: {
     fontSize: 14,
     color: '#000000',
   },
-  button: {
-    height: 40,
-    backgroundColor: '#000000',
-    borderRadius: 6,
-    justifyContent: 'center',
+  routeInfo: {
+    gap: 8,
+  },
+  routePoint: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
+    gap: 8,
   },
-  buttonText: {
-    color: '#ffffff',
+  routeArrow: {
+    paddingLeft: 28,
+  },
+  routeText: {
     fontSize: 14,
-    fontWeight: '500',
+    color: '#000000',
   },
-  linkContainer: {
-    marginTop: 8,
+  statsContainer: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
     alignItems: 'center',
   },
-  linkText: {
-    color: '#0a7ea4',
+  statNumber: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#6b7280',
+    textAlign: 'center',
+  },
+  searchingGroupsCard: {
+    backgroundColor: '#f3f4f6',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  searchIcon: {
+    marginRight: 4,
+  },
+  searchingText: {
+    flex: 1,
     fontSize: 14,
+    color: '#374151',
+    lineHeight: 20,
   },
 });
